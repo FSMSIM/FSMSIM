@@ -1,0 +1,41 @@
+import "halfadder.fsm";
+import "or.fsm";
+
+module FullAdder(3) {
+    input a, b, carry_in;
+    output sum, carry_out;
+
+    HalfAdder ha[2];
+    OrGate or;
+
+    ha[0].a = a;
+    ha[0].b = b;
+    ha[1].a = carry_in;
+    ha[1].b = ha[0].sum;
+    or.a = ha[0].carry_out;
+    or.b = ha[1].carry_out;
+
+    sum = ha[1].sum;
+    carry_out = or.out;
+}
+
+module Adder32(32) {
+    input a[32], b[32];
+    output sum[32];
+
+    HalfAdder ha;
+    FullAdder fa[31];
+
+    ha.a = a[0];
+    ha.b = b[0];
+    fa[0].a = a[1];
+    fa[0].b = b[1];
+    fa[0].carry_in = ha.carry_out;
+    for i in [1, 31] {
+        fa[i].a = a[i];
+        fa[i].b = b[1];
+        fa[i].carry_in = fa[i - 1].carry_out;
+    }
+
+    sum = ha.sum + fa[:].sum;
+}

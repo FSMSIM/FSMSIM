@@ -1,0 +1,37 @@
+module HalfAdder {
+    input a, b;
+    output sum, carry_out;
+
+    sum = "0";
+    carry_out = "0";
+    initial state S0 {
+        <- a == "0" && b == "0";
+    }
+    state S1 {
+        <- a == "1" && b == "0";
+        <- a == "0" && b == "1";
+        sum = "1";
+    }
+    state S2 {
+        <- a == "1" && b == "1";
+        carry_out = "1";
+    }
+}
+
+module Counter2 {
+    input i;
+    output o;
+
+    o = "0";
+    initial state S0 {
+        i == "1" -> S1;
+    }
+    state S1 {
+        i == "1" -> S2;
+    }
+    state S2 {
+        -> S0;
+        i == "1" -> S1;
+        o = "1";
+    }
+}
