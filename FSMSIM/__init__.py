@@ -5,3 +5,4 @@ __author__ = 'FSMSIM'
 
 from FSMSIM.state import State
 from FSMSIM.module import Module
+from FSMSIM.loader import ModuleLoader

@@ -41,71 +41,76 @@ IN: 'in';
 
 INT
 :
-	POSINT // | NEGINT
+    POSINT // | NEGINT
 ;
 
 fragment
 POSINT
 :
-	DIGIT+
+    DIGIT+
 ;
 
 
 fragment
 NEGINT
 :
-	('-')DIGIT+
+    ('-')DIGIT+
 ;
 
 STRING
 :
-	'"' DoubleStringCharacter* '"'
-	| '\'' SingleStringCharacter* '\''
+    '"' DoubleStringCharacter* '"'
+    | '\'' SingleStringCharacter* '\''
 ;
 
 fragment
 DoubleStringCharacter
 :
-	~["\r\n]
+    ~["\r\n]
 ;
 fragment
 SingleStringCharacter
 :
-	~['\r\n]
+    ~['\r\n]
 ;
 fragment
 DIGIT
 :
-	[0-9]
+    [0-9]
 ;
 ID
 :
-	ID_LETTER
-	(
-		ID_LETTER
-		| DIGIT
-	)*
+    LETTER
+    (
+        ID_LETTER
+        | DIGIT
+    )*
+;
+fragment
+LETTER
+:
+    [a-zA-Z]
 ;
 fragment
 ID_LETTER
 :
-	[a-zA-Z_]
+    [a-zA-Z_]
 ;
 // Whitespace and comments
 NEWLINE
 :
-	[\r\n]+ -> skip
+    [\r\n]+ -> skip
 ;
 WS
 :
-	[ \t\r\n\u000C]+ -> skip
+    [ \t\r\n\u000C]+ -> skip
 ;
 COMMENT
 :
-	'/*' .*? '*/' -> skip
+    '/*' .*? '*/' -> skip
 ;
 LINE_COMMENT
 :
-	'//' .*? '\r'? '\n' -> skip
+    '//' .*? '\r'? '\n' -> skip
 ;
 
