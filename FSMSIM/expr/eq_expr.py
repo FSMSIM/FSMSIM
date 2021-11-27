@@ -3,6 +3,7 @@ from FSMSIM.expr.expr import Expr
 
 class EqExpr(BoolExpr):
     def __init__(self, l: Expr, r: Expr) -> None:
+        assert(len(l) == len(r))
         self.l = l
         self.r = r
 

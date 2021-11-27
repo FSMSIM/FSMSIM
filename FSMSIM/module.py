@@ -31,8 +31,10 @@ class Module:
         self.inputs[name] = VarExpr(length) if value is None else value
     
     def define_output(self, name: str, length: int = 1, value: Expr = None):
-        self.default_state.define_output(name, VarExpr(length) if value is None else value)
-        self.outputs[name] = OutputExpr(self, name)
+        value = VarExpr(length) if value is None else value
+        self.default_state.lengths[name] = length
+        self.default_state.define_output(name, value)
+        self.outputs[name] = OutputExpr(self, name, length)
     
     def define_state(self, name: str):
         self.states[name] = State(self.default_state)

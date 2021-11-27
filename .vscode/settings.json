@@ -1,0 +1,8 @@
+{
+    "antlr4.generation": {
+        "language": "Python3",
+        "mode": "external",
+        "outputDir": "../FSMSIM/parser",
+        "listeners": false
+    }
+}

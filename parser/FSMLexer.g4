@@ -1,14 +1,47 @@
 lexer grammar FSMLexer;
 
 SEMICOLON: ';';
+COLON: ':' ;
 LEFTBRACKET: '(';
 RIGHTBRACKET: ')';
+LEFTCURLY: '{';
+RIGHTCURLY: '}';
+LEFTANGLE: '[';
+RIGHTANGLE: ']';
+
+EQ: '==';
+NEQ: '!=';
+AND: '&&';
+OR: '||';
+NOT: '!';
+
+DOT: '.';
+COMMA: ',';
+LEFTARROW: '<-';
+RIGHTARROW: '->';
+ASSIGN: '=';
+
+PLUS: '+';
+MINUS: '-';
+TIMES: '*';
+
+TRUE: 'true';
+FALSE: 'false';
 
 IMPORT: 'import';
+MODULE: 'module';
+INPUT: 'input';
+OUTPUT: 'output';
+STATE: 'state';
+INITIAL: 'initial';
+
+
+FOR: 'for';
+IN: 'in';
 
 INT
 :
-	POSINT | NEGINT
+	POSINT // | NEGINT
 ;
 
 fragment

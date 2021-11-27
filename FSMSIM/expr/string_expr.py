@@ -6,3 +6,6 @@ class StringExpr(Expr):
     
     def evaluate(self) -> str:
         return self.val
+
+    def __len__(self) -> int:
+        return len(self.val)

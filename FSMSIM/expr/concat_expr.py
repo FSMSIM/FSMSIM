@@ -7,3 +7,6 @@ class ConcatExpr(Expr):
     
     def evaluate(self) -> str:
         return self.l.evaluate() + self.r.evaluate()
+    
+    def __len__(self) -> int:
+        return len(self.l) + len(self.r)

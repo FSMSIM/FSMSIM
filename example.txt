@@ -1,9 +1,8 @@
 module HalfAdder {
     input a, b;
-    output sum, carry_out;
+    output sum = "0";
+    output carry_out = "0";
 
-    sum = "0";
-    carry_out = "0";
     initial state S0 {
         <- a == "0" && b == "0";
     }

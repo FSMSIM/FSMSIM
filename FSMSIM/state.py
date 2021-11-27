@@ -8,8 +8,11 @@ class State:
         self.transitions = deque()
         self.outputs = dict()
         self.defaults = defaults
+        self.lengths = dict()
 
     def define_output(self, name: str, output: Expr):
+        lengths = self.lengths if self.defaults is None else self.defaults.lengths
+        assert(len(output) == lengths[name])
         self.outputs[name] = output
 
     def get_output(self, name: str) -> Expr:

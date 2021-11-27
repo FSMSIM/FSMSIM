@@ -15,3 +15,6 @@ class VarExpr(Expr):
     
     def evaluate(self) -> str:
         return self.val.evaluate()
+    
+    def __len__(self) -> int:
+        return self.l
