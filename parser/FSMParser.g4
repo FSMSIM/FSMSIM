@@ -12,6 +12,7 @@ from .. import Module
 @members {
 def init(self, loader):
     self.loader = loader
+    self.vars = dict()
 }
 
 start : importStmt* modDecl* ;
@@ -20,9 +21,9 @@ importStmt : IMPORT STRING SEMICOLON;
 
 modDecl returns [mod]
     : {$mod = Module()} {self.curr_state = $mod.default_state}
-    MODULE ID (LEFTBRACKET INT RIGHTBRACKET)? LEFTCURLY
+    MODULE ID (LEFTBRACKET INT RIGHTBRACKET {$mod.define_clock_cycles($INT.int)})? LEFTCURLY
     inputDecl* outputDecl* childDecl*
-    (outputAssignment | childAssignment | forExpr)*
+    (outputAssignment | childAssignment | assignVar | deleteVar | forExpr)*
     stateDecl*
     RIGHTCURLY
     {self.loader.register($ID.text, $mod)}
@@ -38,14 +39,21 @@ outputDecl
     (COMMA d2=declarationTerm {self.$modDecl::mod.define_output($d2.name, $d2.len, $d2.defVal)})*
     SEMICOLON;
 
-childDecl : ID declarationTerm SEMICOLON;
+childDecl
+    : ID d=declarationTerm SEMICOLON
+    {self.$modDecl::mod.children[$d.name] = self.loader.modules[$ID.text].init() if $d.len == 1 else [self.loader.modules[$ID.text].init() for _ in range($d.len)]};
 
 declarationTerm returns [name, len, defVal]
     : ID {$name = $ID.text} {$len = 1}
     (LEFTANGLE intExpr RIGHTANGLE {$len = $intExpr.val})?
     (ASSIGN strExpr {$defVal = $strExpr.se})?;
 
-forExpr : FOR ID IN LEFTANGLE intExpr COMMA intExpr RIGHTANGLE LEFTCURLY (childAssignment | forExpr)* RIGHTCURLY ;
+assignVar : DOLLAR ID ASSIGN intExpr SEMICOLON {self.vars[$ID.text] = $intExpr.val};
+
+deleteVar : DEL DOLLAR ID SEMICOLON {del self.vars[$ID.text]};
+
+// Not actually used. For loops are unrolled before parsing.
+forExpr : FOR ID IN LEFTANGLE INT COMMA INT COMMA INT RIGHTANGLE LEFTCURLY (childAssignment | forExpr)* RIGHTCURLY ;
 
 stateDecl returns [name]
     : {isInitial = False} (INITIAL {isInitial = True})?
@@ -55,30 +63,33 @@ stateDecl returns [name]
     LEFTCURLY (transitionDecl | outputAssignment)* RIGHTCURLY;
 
 transitionDecl
-    : LEFTARROW boolExpr SEMICOLON {self.$modDecl::mod.default_state.define_transition($boolExpr.be, self.$stateDecl::name)}
+    : LEFTARROW optionalBool SEMICOLON {self.$modDecl::mod.default_state.define_transition($optionalBool.be, self.$stateDecl::name)}
     | optionalBool RIGHTARROW ID SEMICOLON {self.curr_state.define_transition($optionalBool.be, $ID.text)}
     ;
 
 outputAssignment : ID ASSIGN strExpr SEMICOLON {self.curr_state.define_output($ID.text, $strExpr.se)} ;
 
-childAssignment : ID DOT ID ASSIGN strExpr SEMICOLON 
-                | ID LEFTANGLE intExpr RIGHTANGLE DOT ID ASSIGN strExpr SEMICOLON
-                ;
+childAssignment
+    : c=ID DOT f=ID ASSIGN v=strExpr SEMICOLON {self.$modDecl::mod.children[$c.text].inputs[$f.text].set($v.se)}
+    | c=ID LEFTANGLE i=intExpr RIGHTANGLE DOT f=ID ASSIGN v=strExpr SEMICOLON
+      {self.$modDecl::mod.children[$c.text][$i.val].inputs[$f.text].set($v.se)}
+    ;
 
 strExpr returns [se]
     : LEFTBRACKET strExpr RIGHTBRACKET {$se = $strExpr.se}
-    | strExpr LEFTANGLE intExpr RIGHTANGLE {$se = SliceExpr($strExpr.se, $intExpr.val, $intExpr.val + 1)}
-    | strExpr LEFTANGLE s=optionalInt COLON e=optionalInt RIGHTANGLE {$se = SliceExpr($strExpr.se, $s.f (0), $e.f (-1))}
+    | l=strExpr LEFTANGLE intExpr RIGHTANGLE {$se = SliceExpr($l.se, $intExpr.val, $intExpr.val + 1)}
+    | l=strExpr LEFTANGLE s=optionalInt COLON e=optionalInt RIGHTANGLE {$se = SliceExpr($l.se, $s.f (0), $e.f (None))}
     | l=strExpr PLUS r=strExpr {$se = ConcatExpr($l.se, $r.se)}
     | ID {$se = self.$modDecl::mod.inputs[$ID.text]}
     | c=ID DOT i=ID {$se = self.$modDecl::mod.children[$c.text].outputs[$i.text]}
-    | arrayExpr DOT ID
+    | arrayExpr DOT ID {$se = ArrayAccessExpr($arrayExpr.ae, $ID.text)}
     | STRING {$se = StringExpr($STRING.text[1:-1])}
     ;
 
-arrayExpr : ID LEFTANGLE intExpr RIGHTANGLE
-          | ID LEFTANGLE intExpr? COLON intExpr? RIGHTANGLE
-          ;
+arrayExpr returns [ae]
+    : ID LEFTANGLE i=intExpr RIGHTANGLE {$ae = ArrayExpr(self.$modDecl::mod.children[$ID.text], $i.val, $i.val + 1)}
+    | ID LEFTANGLE s=optionalInt COLON e=optionalInt RIGHTANGLE {$ae = ArrayExpr(self.$modDecl::mod.children[$ID.text], $s.f (0), $e.f (None))}
+    ;
 
 boolExpr returns [be]
     : LEFTBRACKET boolExpr RIGHTBRACKET {$be = $boolExpr.be}
@@ -102,7 +113,7 @@ intExpr returns [val]
     | intExpr PLUS intExpr {$val = $i1.val + $i2.val}
     | i1=intExpr MINUS i2=intExpr {$val = $i1.val - $i2.val}
     | INT {$val = $INT.int}
-    //| ID
+    | ID {$val = self.vars[$ID.text]}
     ;
 
 optionalInt returns [f]

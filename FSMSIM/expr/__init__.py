@@ -1,4 +1,6 @@
 from FSMSIM.expr.and_expr import *
+from FSMSIM.expr.arr_access_expr import *
+from FSMSIM.expr.arr_expr import *
 from FSMSIM.expr.bool_expr import *
 from FSMSIM.expr.concat_expr import *
 from FSMSIM.expr.eq_expr import *

@@ -1,5 +1,17 @@
-import "halfadder.fsm";
-import "or.fsm";
+import "example.txt";
+
+module OrGate {
+    input a, b;
+    output out = "0";
+
+    initial state S0 {
+        <-;
+    }
+    state S1 {
+        <- a == "1" || b == "1";
+        out = "1";
+    }
+}
 
 module FullAdder(3) {
     input a, b, carry_in;
@@ -31,7 +43,7 @@ module Adder32(32) {
     fa[0].a = a[1];
     fa[0].b = b[1];
     fa[0].carry_in = ha.carry_out;
-    for i in [1, 31] {
+    for i in [1, 31, 1] {
         fa[i].a = a[i];
         fa[i].b = b[1];
         fa[i].carry_in = fa[i - 1].carry_out;

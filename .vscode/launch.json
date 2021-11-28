@@ -5,7 +5,7 @@
             "name": "Debug ANTLR4 grammar",
             "type": "antlr-debug",
             "request": "launch",
-            "input": "example.txt",
+            "input": "example2.txt",
             "grammar": "parser/FSMParser.g4",
             "actionFile": "parser/actions.js",
             "startRule": "start",

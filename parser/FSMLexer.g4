@@ -9,6 +9,9 @@ RIGHTCURLY: '}';
 LEFTANGLE: '[';
 RIGHTANGLE: ']';
 
+DOLLAR: '$';
+DEL: 'del';
+
 EQ: '==';
 NEQ: '!=';
 AND: '&&';
