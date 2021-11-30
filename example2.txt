@@ -35,19 +35,32 @@ module Adder32(32) {
     input a[32], b[32];
     output sum[32];
 
-    HalfAdder ha;
-    FullAdder fa[31];
+    FullAdder fa[32];
 
-    ha.a = a[0];
-    ha.b = b[0];
-    fa[0].a = a[1];
-    fa[0].b = b[1];
-    fa[0].carry_in = ha.carry_out;
-    for i in [1, 31, 1] {
+    fa[0].a = a[0];
+    fa[0].b = b[0];
+    for i in [1, 32, 1] {
         fa[i].a = a[i];
-        fa[i].b = b[1];
+        fa[i].b = b[i];
         fa[i].carry_in = fa[i - 1].carry_out;
     }
 
-    sum = ha.sum + fa[:].sum;
+    sum = fa[:].sum;
+}
+
+module Adder4(4) {
+    input a[4], b[4];
+    output sum[4];
+
+    FullAdder fa[4];
+
+    fa[0].a = a[0];
+    fa[0].b = b[0];
+    for i in [1, 4, 1] {
+        fa[i].a = a[i];
+        fa[i].b = b[i];
+        fa[i].carry_in = fa[i - 1].carry_out;
+    }
+
+    sum = fa[:].sum;
 }

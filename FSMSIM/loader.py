@@ -52,6 +52,7 @@ class ModuleLoader:
                     count += 1
                 body_end += 1
             body = code[body_start:body_end - 1]
+            body = self.rewrite(body)
             unrolled = []
             for i in range(start, end, step):
                 unrolled.append("${} = {};".format(var, i))

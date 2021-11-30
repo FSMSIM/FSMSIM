@@ -1,0 +1,63 @@
+import "example2.txt";
+
+module BitCounter8(3) {
+    input i[8];
+    output o[4];
+
+    FullAdder fa[3];
+    Adder4 adder[2];
+
+    for i in [0, 2, 1] {
+        fa[i].a = i[i * 3];
+        fa[i].b = i[i * 3 + 1];
+        fa[i].carry_in = i[i * 3 + 2];
+    }
+    fa[2].a = i[6];
+    fa[2].b = i[7];
+
+    adder[0].a = fa[0].sum + fa[0].carry_out + "00";
+    adder[0].b = fa[1].sum + fa[1].carry_out + "00";
+    adder[1].a = fa[2].sum + fa[2].carry_out + "00";
+    adder[1].b = adder[0].sum;
+
+    o = adder[1].sum;
+}
+
+module Cell {
+    input i, n[8];
+    output s = "0";
+
+    BitCounter8 bc;
+    bc.i = n;
+
+    initial state Init {
+        i != "0" -> Alive;
+    }
+    state Dead {
+        <-;
+        bc.o == "1100" -> Alive;
+    }
+    state Alive {
+        bc.o[1:] == "100" -> Alive;
+        s = "1";
+    }
+}
+
+module GameOfLife {
+    $s = 17;
+    input i[s * s];
+    output o[s * s];
+
+    Cell cells[s * s];
+
+    for r in [1, 16, 1] {
+        for c in [1, 16, 1] {
+            cells[r * s + c].i = i[r * s + c];
+            cells[r * s + c].n =
+                cells[(r - 1) * s + c - 1:(r - 1) * s + c + 2].s +
+                cells[r * s + c - 1].s + cells[r * s + c + 1].s +
+                cells[(r + 1) * s + c - 1:(r + 1) * s + c + 2].s;
+        }
+    }
+    o = cells[:].s;
+}

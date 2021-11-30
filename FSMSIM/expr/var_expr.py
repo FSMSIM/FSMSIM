@@ -7,10 +7,10 @@ class VarExpr(Expr):
         self.val = StringExpr("0" * l)
     
     def set(self, val):
+        assert len(val) == self.l
         if isinstance(val, Expr):
             self.val = val
         elif isinstance(val, str):
-            assert len(val) == self.l
             self.val = StringExpr(val)
     
     def evaluate(self) -> str:

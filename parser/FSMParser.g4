@@ -17,13 +17,14 @@ def init(self, loader):
 
 start : importStmt* modDecl* ;
 
-importStmt : IMPORT STRING SEMICOLON;
+importStmt : IMPORT STRING SEMICOLON {self.loader.load($STRING.text[1:-1])};
 
 modDecl returns [mod]
-    : {$mod = Module()} {self.curr_state = $mod.default_state}
+    : {$mod = Module()} {self.curr_state = $mod.default_state} {self.vars = dict()}
     MODULE ID (LEFTBRACKET INT RIGHTBRACKET {$mod.define_clock_cycles($INT.int)})? LEFTCURLY
+    assignVar*
     inputDecl* outputDecl* childDecl*
-    (outputAssignment | childAssignment | assignVar | deleteVar | forExpr)*
+    (outputAssignment | childAssignment | assignVar | forExpr)*
     stateDecl*
     RIGHTCURLY
     {self.loader.register($ID.text, $mod)}
@@ -50,7 +51,7 @@ declarationTerm returns [name, len, defVal]
 
 assignVar : DOLLAR ID ASSIGN intExpr SEMICOLON {self.vars[$ID.text] = $intExpr.val};
 
-deleteVar : DEL DOLLAR ID SEMICOLON {del self.vars[$ID.text]};
+// deleteVar : DEL DOLLAR ID SEMICOLON {del self.vars[$ID.text]};
 
 // Not actually used. For loops are unrolled before parsing.
 forExpr : FOR ID IN LEFTANGLE INT COMMA INT COMMA INT RIGHTANGLE LEFTCURLY (childAssignment | forExpr)* RIGHTCURLY ;
@@ -109,8 +110,8 @@ optionalBool returns [be]
 
 intExpr returns [val]
     : LEFTBRACKET intExpr RIGHTBRACKET {$val = $intExpr.val}
-    | intExpr TIMES intExpr {$val = $i1.val * $i2.val}
-    | intExpr PLUS intExpr {$val = $i1.val + $i2.val}
+    | i1=intExpr TIMES i2=intExpr {$val = $i1.val * $i2.val}
+    | i1=intExpr PLUS i2=intExpr {$val = $i1.val + $i2.val}
     | i1=intExpr MINUS i2=intExpr {$val = $i1.val - $i2.val}
     | INT {$val = $INT.int}
     | ID {$val = self.vars[$ID.text]}
